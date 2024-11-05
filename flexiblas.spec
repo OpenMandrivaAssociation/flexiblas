@@ -75,6 +75,7 @@ BuildRequires:	blis-devel
 %if %{with openblas}
 BuildRequires:	pkgconfig(openblas)
 %endif
+BuildRequires:	openmpi
 
 Requires:	%{name}-netlib = %{version}-%{release}
 
