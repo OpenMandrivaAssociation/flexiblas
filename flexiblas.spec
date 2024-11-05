@@ -61,7 +61,7 @@ Source0:	https://github.com/mpimd-csc/flexiblas/archive/v%{version}/%{name}-%{ve
 
 BuildRequires:	cmake ninja
 BuildRequires:	gcc-gfortran
-BuildRequires:	pkgconfig(ompi)
+BuildRequires:	gomp-devel
 %if %{with system_lapack}
 BuildRequires:	pkgconfig(blas)
 BuildRequires:	pkgconfig(lapack)
@@ -75,7 +75,6 @@ BuildRequires:	blis-devel
 %if %{with openblas}
 BuildRequires:	pkgconfig(openblas)
 %endif
-BuildRequires:	openmpi
 
 Requires:	%{name}-netlib = %{version}-%{release}
 
