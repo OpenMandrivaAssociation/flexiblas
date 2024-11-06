@@ -60,6 +60,7 @@ URL:		https://www.mpi-magdeburg.mpg.de/projects/%{name}
 Source0:	https://github.com/mpimd-csc/flexiblas/archive/v%{version}/%{name}-%{version}.tar.gz
 
 BuildRequires:	cmake ninja
+BuildRequires:	cpupower-devel
 BuildRequires:	gcc-gfortran
 BuildRequires:	gomp-devel
 %if %{with system_lapack}
@@ -75,6 +76,7 @@ BuildRequires:	blis-devel
 %if %{with openblas}
 BuildRequires:	pkgconfig(openblas)
 %endif
+BuildRequires:	util-linux
 
 Requires:	%{name}-netlib = %{version}-%{release}
 
