@@ -21,9 +21,9 @@
 %bcond tests		1
 
 %if %{with openblas}
-%global default_backend openblas-openmp
+%global default_backend		openblas-openmp
 %else
-%global default_backend netlib
+%global default_backend		netlib
 %endif
 %global default_backend64 %{default_backend}64
 
@@ -49,7 +49,7 @@ used in an executable without recompiling or re-linking it.
 Summary:	A BLAS/LAPACK wrapper library with runtime exchangeable backends
 Name:		flexiblas
 Version:	3.4.4
-Release:	2
+Release:	3
 Group:		Sciences/Mathematics
 # GPLv3 with an exception for the BLAS/LAPACK interface
 # https://www.gnu.org/licenses/gpl-faq.en.html#LinkingOverControlledInterface
@@ -77,18 +77,40 @@ BuildRequires:	pkgconfig(openblas)
 %endif
 BuildRequires:	util-linux
 
-Requires:	%{name}-netlib = %{version}-%{release}
+Requires:	%{name}-%{default_backend} = %{EVRD}
+%if 0%{?arch64}
+Requires:	%{name}-%{default_backend}64 = %{EVRD}
+%endif
 
 %description %_description
 
 %files
 %license COPYING COPYING.NETLIB
 %doc ISSUES.md README.md CHANGELOG
+%config(noreplace) %{_sysconfdir}/%{name}rc
+%dir %{_sysconfdir}/%{name}rc.d
+%{_bindir}/%{name}
+%{_libdir}/lib%{name}.so.%{major}*
+%{_libdir}/lib%{name}_api.so.%{major}*
+%{_libdir}/lib%{name}_mgmt.so.%{major}*
+%dir %{_libdir}/%{name}
+%{_mandir}/man1/%{name}.1*
+%if 0%{?arch64}
+%config(noreplace) %{_sysconfdir}/%{name}64rc
+%dir %{_sysconfdir}/%{name}64rc.d
+%{_bindir}/%{name}64
+%{_libdir}/lib%{name}64.so.%{major}*
+%{_libdir}/lib%{name}64_api.so.%{major}*
+%{_libdir}/lib%{name}64_mgmt.so.%{major}*
+%dir %{_libdir}/%{name}64
+%{_mandir}/man1/%{name}64.1*
+%endif
 
 #-------------------------------------------------------------------------
 
 %package -n %{libnname}
 Summary:	FlexiBLAS wrapper library
+Group:		Sciences/Mathematics
 Requires:	%{name} = %{EVRD}
 Requires:	%{name}-%{default_backend} = %{EVRD}
 Provides:	%{name}-netlib
@@ -97,37 +119,21 @@ Provides:	%{name}-netlib
 This package contains the wrapper library for the NETLIB project.
 
 %files -n %{libnname}
-%config(noreplace) %{_sysconfdir}/%{name}rc
-%dir %{_sysconfdir}/%{name}rc.d
 %{_sysconfdir}/%{name}rc.d/netlib.conf
-%{_bindir}/%{name}
-%{_libdir}/lib%{name}.so.%{major}*
-%{_libdir}/lib%{name}_api.so.%{major}*
-%{_libdir}/lib%{name}_mgmt.so.%{major}*
-%dir %{_libdir}/%{name}
 %{_libdir}/%{name}/lib%{name}_fallback_lapack.so
 %{_libdir}/%{name}/lib%{name}_netlib.so
-%{_mandir}/man1/%{name}.1*
 %if 0%{?arch64}
-%config(noreplace) %{_sysconfdir}/%{name}64rc
-%dir %{_sysconfdir}/%{name}64rc.d
 %{_sysconfdir}/%{name}64rc.d/netlib.conf
-%{_bindir}/%{name}64
-%{_libdir}/lib%{name}64.so.%{major}*
-%{_libdir}/lib%{name}64_api.so.%{major}*
-%{_libdir}/lib%{name}64_mgmt.so.%{major}*
-%dir %{_libdir}/%{name}64
 %{_libdir}/%{name}64/lib%{name}_fallback_lapack.so
 %{_libdir}/%{name}64/lib%{name}_netlib.so
-%{_mandir}/man1/%{name}64.1*
 %endif
 
 #-------------------------------------------------------------------------
 
 %package hook-profile
 Summary:	FlexiBLAS profile hook plugin
+Group:		Sciences/Mathematics
 Requires:	%{name} = %{EVRD}
-Requires:	%{name}-netlib = %{EVRD}
 
 %description hook-profile %_description
 This package contains a plugin that enables profiling support.
@@ -142,8 +148,25 @@ This package contains a plugin that enables profiling support.
 
 %package devel
 Summary:	Development headers and libraries for FlexiBLAS
+Group:		Development/C
 Requires:	%{name} = %{EVRD}
-Requires:	%{name}-netlib = %{EVRD}
+Requires:	%{name}-%{default_backend} = %{EVRD}
+%if 0%{?arch64}
+Requires:	%{name}-%{default_backend}64 = %{EVRD}
+%endif
+#if %{with atlas}
+#Requires:	%{libaname} = %{EVRD}
+#endif
+#if %{with blis}
+#Requires:	%{libbsname} = %{EVRD}
+#Requires:	%{libbpname} = %{EVRD}
+#Requires:	%{libboname} = %{EVRD}
+#endif
+#if %{with openblas}
+#Requires:	%{libosname} = %{EVRD}
+#Requires:	%{libopname} = %{EVRD}
+#Requires:	%{libooname} = %{EVRD}
+#endif
 
 %description devel %_description
 This package contains the development headers and libraries.
@@ -175,8 +198,8 @@ This package contains the development headers and libraries.
 %if %{with atlas}
 %package -n %{libaname}
 Summary:	FlexiBLAS wrappers for ATLAS
+Group:		Sciences/Mathematics
 Requires:	%{name} = %{EVRD}
-Requires:       %{name}-netlib = %{EVRD}
 Provides:	%{name}-atlas
 
 %description -n %{libaname} %_description
@@ -192,12 +215,15 @@ This package contains FlexiBLAS wrappers for the ATLAS project.
 %if %{with blis}
 %package -n %{libbsname}
 Summary:	FlexiBLAS wrappers for BLIS
+Group:		Sciences/Mathematics
 Requires:	%{name} = %{EVRD}
-Requires:       %{name}-netlib = %{EVRD}
 Provides:	%{name}-blis-serial
+%if 0%{?arch64}
+Provides:	%{name}-blis-serial64
+%endif
 
 %description -n %{libbsname} %_description
-This package contains FlexiBLAS wrappers for the sequential library.
+This package contains FlexiBLAS wrappers for the BLIS project.
 
 %files -n %{libbsname}
 %{_sysconfdir}/%{name}rc.d/blis-serial.conf
@@ -207,12 +233,16 @@ This package contains FlexiBLAS wrappers for the sequential library.
 
 %package -n %{libbpname}
 Summary:	FlexiBLAS wrappers for BLIS
+Group:		Sciences/Mathematics
 Requires:	%{name} = %{EVRD}
-Requires:       %{name}-netlib = %{EVRD}
 Provides:	%{name}-blis-threads
+%if 0%{?arch64}
+Provides:	%{name}-blis-threads64
+%endif
 
 %description -n %{libbpname} %_description
-This package contains FlexiBLAS wrappers for the library.
+This package contains FlexiBLAS wrappers for the BLIS project with
+threading support.
 
 %files -n %{libbpname}
 %{_sysconfdir}/%{name}rc.d/blis-threads.conf
@@ -222,12 +252,16 @@ This package contains FlexiBLAS wrappers for the library.
 
 %package -n %{libboname}
 Summary:	FlexiBLAS wrappers for BLIS
+Group:		Sciences/Mathematics
 Requires:	%{name} = %{EVRD}
-Provides:	%{name}-netlib
 Provides:	%{name}-blis-openmp
+%if 0%{?arch64}
+Provides:	%{name}-blis-openmp64
+%endif
 
 %description -n %{libboname} %_description
-This package contains FlexiBLAS wrappers for the library.
+This package contains FlexiBLAS wrappers for the BLIS project with
+OpenMP support.
 
 %files -n %{libboname}
 %{_sysconfdir}/%{name}rc.d/blis-openmp.conf
@@ -239,13 +273,15 @@ This package contains FlexiBLAS wrappers for the library.
 %if %{with openblas}
 %package -n %{libosname}
 Summary:	FlexiBLAS wrappers for OpenBLAS
+Group:		Sciences/Mathematics
 Requires:	%{name} = %{EVRD}
-Requires:       %{name}-netlib = %{EVRD}
 Provides:	%{name}-openblas-serial
+%if 0%{?arch64}
+Provides:	%{name}-openblas-serial64
+%endif
 
 %description -n %{libosname} %_description
-This package contains FlexiBLAS wrappers for the sequential library compiled
-with a 32-integer interface.
+This package contains FlexiBLAS wrappers for the OpenBLAS project.
 
 %files -n %{libosname}
 %{_sysconfdir}/%{name}rc.d/openblas-serial.conf
@@ -259,13 +295,16 @@ with a 32-integer interface.
 
 %package -n %{libopname}
 Summary:	FlexiBLAS wrappers for OpenBLAS
+Group:		Sciences/Mathematics
 Requires:	%{name} = %{EVRD}
-Requires:       %{name}-netlib = %{EVRD}
 Provides:	%{name}-openblas-threads
+%if 0%{?arch64}
+Provides:	%{name}-openblas-threads64
+%endif
 
 %description -n %{libopname} %_description
-This package contains FlexiBLAS wrappers for the library compiled with
-threading support with a 32-integer interface.
+This package contains FlexiBLAS wrappers for the OpenBLAS project with
+threading support.
 
 %files -n %{libopname}
 %{_sysconfdir}/%{name}rc.d/openblas-threads.conf
@@ -279,13 +318,16 @@ threading support with a 32-integer interface.
 
 %package -n %{libooname}
 Summary:	FlexiBLAS wrappers for OpenBLAS
+Group:		Sciences/Mathematics
 Requires:	%{name} = %{EVRD}
-Requires:       %{name}-netlib = %{EVRD}
 Provides:	%{name}-openblas-openmp
+%if 0%{?arch64}
+Provides:	%{name}-openblas-openmp64
+%endif
 
 %description -n %{libooname} %_description
-This package contains FlexiBLAS wrappers for the library compiled with
-OpenMP support with a 32-integer interface.
+This package contains FlexiBLAS wrappers for the OpenBLAS project with
+OpenMP support.
 
 %files -n %{libooname}
 %{_sysconfdir}/%{name}rc.d/openblas-openmp.conf
@@ -313,7 +355,6 @@ rm -rf contributed
 
 for d in build%{?arch64:{,64}}
 do
-
 	if [[ "$d" =~ "64_" ]]; then
 		INTEGER8=ON
 		SYS_BLAS_LIBRARY="%{_libdir}/libblas64_.so"
