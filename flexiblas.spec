@@ -49,7 +49,7 @@ used in an executable without recompiling or re-linking it.
 Summary:	A BLAS/LAPACK wrapper library with runtime exchangeable backends
 Name:		flexiblas
 Version:	3.4.4
-Release:	3
+Release:	4
 Group:		Sciences/Mathematics
 # GPLv3 with an exception for the BLAS/LAPACK interface
 # https://www.gnu.org/licenses/gpl-faq.en.html#LinkingOverControlledInterface
@@ -77,6 +77,9 @@ BuildRequires:	pkgconfig(openblas)
 %endif
 BuildRequires:	util-linux
 
+# fallback
+Requires:	%{libnname} = %{EVRD}
+# default backend
 Requires:	%{name}-%{default_backend} = %{EVRD}
 %if 0%{?arch64}
 Requires:	%{name}-%{default_backend}64 = %{EVRD}
